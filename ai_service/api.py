@@ -19,6 +19,15 @@ class CommandRequest(BaseModel):
     command: str
     scene_state: Optional[Dict[str, Any]] = None
     user_context: Optional[Dict[str, Any]] = None
+    
+    @validator('command')
+    def validate_command(cls, v):
+        """Validate command is not empty and within length limit"""
+        if not v or not v.strip():
+            raise ValueError('Command cannot be empty')
+        if len(v) > 1000:
+            raise ValueError('Command too long (max 1000 characters)')
+        return v.strip()
 
 
 class CommandResponse(BaseModel):
