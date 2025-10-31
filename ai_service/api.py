@@ -44,6 +44,13 @@ class SceneStateUpdate(BaseModel):
     lights: List[Dict[str, Any]]
     cameras: List[Dict[str, Any]]
     timestamp: float
+    
+    @validator('objects', 'lights', 'cameras')
+    def validate_array_size(cls, v):
+        """Validate arrays are not too large"""
+        if len(v) > 1000:
+            raise ValueError('Too many items (max 1000)')
+        return v
 
 
 class SuggestionRequest(BaseModel):
