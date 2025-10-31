@@ -25,16 +25,15 @@ class NLPEngine:
     async def initialize(self):
         """Initialize NLP models"""
         try:
-            if spacy is not None:
+            if SPACY_AVAILABLE and spacy is not None:
                 logger.info("Loading spaCy model...")
                 # Load English language model
                 try:
                     self.nlp = spacy.load("en_core_web_sm")
+                    logger.info("spaCy model loaded successfully")
                 except OSError:
-                    logger.warning("spaCy model not found, downloading...")
-                    import subprocess
-                    subprocess.run(["python", "-m", "spacy", "download", "en_core_web_sm"], check=False)
-                    self.nlp = spacy.load("en_core_web_sm")
+                    logger.warning("spaCy model not found, will use fallback NLP")
+                    self.nlp = None
             else:
                 logger.warning("spaCy not available; using lightweight rule-based NLP fallback")
                 self.nlp = None
