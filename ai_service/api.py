@@ -3,7 +3,7 @@ API Routes for AI Movie Studio Service
 """
 
 from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
 from typing import List, Dict, Any, Optional
 from loguru import logger
 
