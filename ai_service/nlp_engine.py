@@ -6,8 +6,10 @@ Handles natural language processing for command understanding
 
 try:
     import spacy  # Optional: only used if available
-except Exception:  # ImportError or other env issues
+    SPACY_AVAILABLE = True
+except ImportError:
     spacy = None
+    SPACY_AVAILABLE = False
 from typing import Dict, List, Any, Optional
 from loguru import logger
 
