@@ -220,8 +220,9 @@ Return as JSON array of strings."""
                 suggestions = json.loads(json_str)
                 return suggestions[:5]
                 
-            except:
+            except (json.JSONDecodeError, ValueError, IndexError) as e:
                 # Return default suggestions on parse error
+                logger.warning(f"Failed to parse suggestions from LLM: {e}")
                 return [
                     "Add a camera in front of character",
                     "Create a living room with furniture",
