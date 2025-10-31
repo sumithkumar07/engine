@@ -96,6 +96,52 @@ class NLPEngine:
             ]
         }
     
+    def _create_fallback_token(self, text: str, index: int) -> Any:
+        """
+        Create a simple token object for fallback NLP when spaCy is not available
+        
+        Args:
+            text: Token text
+            index: Token index in sentence
+            
+        Returns:
+            Simple token object with basic properties
+        """
+        verb_words = ["add", "create", "make", "move", "rotate", "scale", "remove", "delete"]
+        
+        class FallbackToken:
+            def __init__(self, text: str, idx: int):
+                self.text = text
+                self.pos_ = "VERB" if text.lower() in verb_words else ""
+                self.lemma_ = text.lower()
+                self.dep_ = ""
+                self.idx = idx
+                self.head = type("TokenHead", (), {"text": ""})()
+        
+        return FallbackToken(text, index)
+    
+    def _create_fallback_doc(self, text: str, tokens: List[str]) -> Any:
+        """
+        Create a simple document object for fallback NLP when spaCy is not available
+        
+        Args:
+            text: Original text
+            tokens: List of token strings
+            
+        Returns:
+            Simple document object compatible with spaCy API
+        """
+        class FallbackDoc:
+            def __init__(self, text: str, tokens: List[str], token_creator):
+                self.text = text
+                self.ents = []
+                self._tokens = [token_creator(t, i) for i, t in enumerate(tokens)]
+            
+            def __iter__(self):
+                return iter(self._tokens)
+        
+        return FallbackDoc(text, tokens, self._create_fallback_token)
+    
     async def parse_command(self, command: str, context: Optional[Dict] = None) -> Dict[str, Any]:
         """
         Parse natural language command
@@ -120,15 +166,7 @@ class NLPEngine:
                 tokens = [token.text for token in doc]
             else:
                 tokens = lower.split()
-                class _Doc:
-                    def __init__(self, text, tokens):
-                        self.text = text
-                        self.ents = []
-                        self._tokens = tokens
-                    def __iter__(self):
-                        for t in self._tokens:
-                            yield type("_Tok", (), {"text": t, "pos_": "VERB" if t in ["add","create","make","move","rotate","scale","remove","delete"] else "", "lemma_": t, "dep_": "", "head": type("_H", (), {"text":""}) , "idx": 0})
-                doc = _Doc(lower, tokens)
+                doc = self._create_fallback_doc(lower, tokens)
             
             # Extract intent
             intent = self._extract_intent(doc)
