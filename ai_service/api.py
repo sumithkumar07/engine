@@ -271,8 +271,17 @@ async def get_templates():
         raise HTTPException(status_code=500, detail=str(e))
 
 
+class FeedbackRequest(BaseModel):
+    """User feedback data"""
+    command: str
+    result_quality: int  # 1-5 rating
+    was_helpful: bool
+    comments: Optional[str] = None
+    timestamp: float
+
+
 @router.post("/learn")
-async def learn_from_feedback(feedback: Dict[str, Any]):
+async def learn_from_feedback(feedback: FeedbackRequest):
     """
     Learn from user feedback
     
@@ -283,11 +292,29 @@ async def learn_from_feedback(feedback: Dict[str, Any]):
         Success message
     """
     try:
-        logger.info(f"Learning from feedback: {feedback}")
+        logger.info(f"Learning from feedback: command='{feedback.command}', quality={feedback.result_quality}")
         
-        # TODO: Implement learning system
+        # Store feedback for future learning
+        # In production, this would save to a database
+        feedback_data = {
+            "command": feedback.command,
+            "quality": feedback.result_quality,
+            "helpful": feedback.was_helpful,
+            "comments": feedback.comments,
+            "timestamp": feedback.timestamp
+        }
         
-        return {"success": True, "message": "Feedback recorded"}
+        # Log for analysis
+        logger.info(f"Feedback recorded: {feedback_data}")
+        
+        # In future: Use this data to fine-tune the model or adjust decision rules
+        # For now, just acknowledge receipt
+        
+        return {
+            "success": True, 
+            "message": "Feedback recorded for future improvements",
+            "feedback_id": int(feedback.timestamp)
+        }
         
     except Exception as e:
         logger.error(f"Error learning from feedback: {e}")
