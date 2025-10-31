@@ -125,7 +125,21 @@ async def update_scene_state(state: SceneStateUpdate):
         logger.info(f"Scene state updated: {len(state.objects)} objects, "
                    f"{len(state.lights)} lights, {len(state.cameras)} cameras")
         
-        # TODO: Update scene analyzer with new state
+        # Update scene analyzer with new state
+        from main import get_ai_components
+        components = get_ai_components()
+        scene_analyzer = components["analyzer"]
+        
+        if scene_analyzer and scene_analyzer.initialized:
+            await scene_analyzer.update_scene_state({
+                "objects": state.objects,
+                "lights": state.lights,
+                "cameras": state.cameras,
+                "timestamp": state.timestamp
+            })
+            logger.info("Scene analyzer updated successfully")
+        else:
+            logger.warning("Scene analyzer not available")
         
         return {"success": True, "message": "Scene state updated"}
         
