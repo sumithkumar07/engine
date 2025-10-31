@@ -218,27 +218,51 @@ async def get_templates():
         List of available templates
     """
     try:
-        # TODO: Load from database or configuration
-        templates = {
-            "scenes": [
-                "Living Room",
-                "Bedroom",
-                "Office",
-                "Kitchen"
-            ],
-            "cameras": [
-                "Close-up",
-                "Medium Shot",
-                "Wide Shot",
-                "Tracking Shot"
-            ],
-            "lighting": [
-                "Dramatic",
-                "Romantic",
-                "Action",
-                "Soft"
-            ]
-        }
+        from main import get_ai_components
+        components = get_ai_components()
+        decision_engine = components["decision"]
+        
+        if decision_engine and decision_engine.initialized:
+            # Get templates from decision engine
+            templates = {
+                "scenes": list(decision_engine.templates.keys()),
+                "cameras": [
+                    "Close-up",
+                    "Medium Shot",
+                    "Wide Shot",
+                    "Tracking Shot",
+                    "Over-the-shoulder"
+                ],
+                "lighting": [
+                    "three_point",
+                    "dramatic_lighting",
+                    "Romantic",
+                    "Action",
+                    "Soft"
+                ]
+            }
+        else:
+            # Fallback templates
+            templates = {
+                "scenes": [
+                    "living_room",
+                    "Bedroom",
+                    "Office",
+                    "Kitchen"
+                ],
+                "cameras": [
+                    "Close-up",
+                    "Medium Shot",
+                    "Wide Shot",
+                    "Tracking Shot"
+                ],
+                "lighting": [
+                    "Dramatic",
+                    "Romantic",
+                    "Action",
+                    "Soft"
+                ]
+            }
         
         return templates
         
