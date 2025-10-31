@@ -57,6 +57,13 @@ class SuggestionRequest(BaseModel):
     """Request for AI suggestions"""
     partial_command: str
     scene_state: Optional[Dict[str, Any]] = None
+    
+    @validator('partial_command')
+    def validate_partial_command(cls, v):
+        """Validate partial command"""
+        if len(v) > 500:
+            raise ValueError('Partial command too long (max 500 characters)')
+        return v.strip()
 
 
 class SuggestionResponse(BaseModel):
