@@ -143,17 +143,32 @@ def get_ai_components():
 
 def main():
     """Main entry point"""
-    # Configure logging
-    logger.add(
-        "logs/ai_service_{time}.log",
-        rotation="1 day",
-        retention="7 days",
-        level="INFO"
-    )
-    
     # Get configuration from environment
     host = os.getenv("AI_SERVICE_HOST", "127.0.0.1")
     port = int(os.getenv("AI_SERVICE_PORT", "8080"))
+    log_dir = os.getenv("LOG_DIR", "logs")
+    
+    # Create log directory if it doesn't exist
+    log_path = os.path.join(os.path.dirname(__file__), log_dir)
+    try:
+        os.makedirs(log_path, exist_ok=True)
+    except Exception as e:
+        print(f"Warning: Could not create log directory {log_path}: {e}")
+        print("Logging to console only")
+        log_path = None
+    
+    # Configure logging
+    if log_path:
+        try:
+            logger.add(
+                os.path.join(log_path, "ai_service_{time}.log"),
+                rotation="1 day",
+                retention="7 days",
+                level=os.getenv("LOG_LEVEL", "INFO")
+            )
+        except Exception as e:
+            print(f"Warning: Could not configure file logging: {e}")
+            print("Logging to console only")
     
     logger.info(f"Starting AI Service on {host}:{port}")
     
