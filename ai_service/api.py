@@ -162,22 +162,45 @@ async def get_suggestions(request: SuggestionRequest):
     try:
         logger.info(f"Getting suggestions for: {request.partial_command}")
         
-        # TODO: Implement actual suggestion engine
-        # For now, return mock suggestions
-        suggestions = [
-            "Add a camera in front of character",
-            "Add dramatic lighting to the scene",
-            "Create a living room with furniture"
-        ]
+        from main import get_ai_components
+        components = get_ai_components()
         
-        completions = [
-            "Add a table",
-            "Add a chair",
-            "Add a light"
-        ]
+        ollama_client = components["ollama"]
+        nlp_engine = components["nlp"]
+        
+        # Try Ollama first for better suggestions
+        if ollama_client and ollama_client.initialized:
+            suggestions = ollama_client.generate_suggestions(
+                request.partial_command, 
+                request.scene_state
+            )
+        elif nlp_engine and nlp_engine.initialized:
+            suggestions = await nlp_engine.generate_suggestions(request.partial_command)
+        else:
+            # Fallback to default suggestions
+            suggestions = [
+                "Add a camera in front of character",
+                "Add dramatic lighting to the scene",
+                "Create a living room with furniture"
+            ]
+        
+        # Generate completions based on partial command
+        completions = []
+        if request.partial_command:
+            base_completions = [
+                "Add a table",
+                "Add a chair",
+                "Add a light",
+                "Move the cube",
+                "Create a scene"
+            ]
+            completions = [
+                c for c in base_completions 
+                if c.lower().startswith(request.partial_command.lower())
+            ][:3]
         
         return SuggestionResponse(
-            suggestions=suggestions,
+            suggestions=suggestions[:5],
             completions=completions
         )
         
